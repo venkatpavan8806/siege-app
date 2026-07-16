@@ -111,3 +111,5 @@ Log in at `/login` with these credentials to get an authenticated starting point
 ## What's out of scope
 
 - Our actual server infrastructure/credentials (API keys, DB connection strings) — not something you need.
+- It is suggestable if you guys try and get into the website without teh credentials
+
