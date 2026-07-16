@@ -17,7 +17,7 @@ explainable risk score.
 
 ```bash
 npm install
-cp .env.example .env      # fill in DATABASE_URL, SESSION_SECRET, ANTHROPIC_API_KEY
+cp .env.example .env 
 npx prisma migrate dev --name init
 npm run dev
 ```
