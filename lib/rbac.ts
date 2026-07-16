@@ -50,12 +50,12 @@ export async function requireRole(
  * Usage:
  *   export const POST = withAuthErrors(async (req) => { ... });
  */
-export function withAuthErrors(
-  handler: (req: Request) => Promise<Response>
+export function withAuthErrors<Context = unknown>(
+  handler: (req: Request, context: Context) => Promise<Response>
 ) {
-  return async (req: Request) => {
+  return async (req: Request, context: Context) => {
     try {
-      return await handler(req);
+      return await handler(req, context);
     } catch (err) {
       if (err instanceof AuthError) {
         return NextResponse.json({ error: err.message }, { status: err.status });
