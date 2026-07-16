@@ -26,7 +26,7 @@ const FETCH_TIMEOUT_MS = 8_000;
 const MAX_BODY_BYTES = 2_000_000; // 2MB
 const MAX_REDIRECTS = 3;
 
-class SsrfBlockedError extends Error {}
+class SsrfBlockedError extends Error { }
 
 function unwrapIPv4Mapped(ip: string): string | null {
   const lower = ip.toLowerCase();
@@ -40,7 +40,7 @@ function unwrapIPv4Mapped(ip: string): string | null {
 }
 
 function isPrivateOrReservedIp(ip: string): boolean {
-if (net.isIPv4(ip)) {
+  if (net.isIPv4(ip)) {
     const [a, b] = ip.split(".").map(Number);
     if (a === 10) return true; // 10.0.0.0/8
     if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
@@ -100,6 +100,7 @@ export type SafeFetchResult = {
   finalUrl: string;
   status: number;
   body: string; // raw text, capped at MAX_BODY_BYTES — treat as untrusted
+  headers: Record<string, string>;
 };
 
 /**

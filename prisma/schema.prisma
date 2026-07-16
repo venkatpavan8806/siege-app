@@ -41,10 +41,23 @@ model Asset {
   createdAt   DateTime @default(now())
   scanEnabled Boolean  @default(true)
 
-  snapshots Snapshot[]
-  alerts    Alert[]
+  snapshots     Snapshot[]
+  alerts        Alert[]
+  vulnFindings  VulnFinding[]
 
   @@index([addedById])
+}
+
+model VulnFinding {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  category  String   // HEADERS | TRANSPORT | EXPOSURE | INFO_DISCLOSURE
+  finding   String   // human-readable description of the specific issue
+  severity  String   // LOW | MEDIUM | HIGH
+  checkedAt DateTime @default(now())
+
+  @@index([assetId, checkedAt])
 }
 
 model Snapshot {
