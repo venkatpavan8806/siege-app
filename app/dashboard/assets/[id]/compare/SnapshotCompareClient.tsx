@@ -53,12 +53,18 @@ export default function SnapshotCompareClient({
         afterMarked.filter((l) => l.changed).length;
 
     return (
-        <div>
-            <div className="flex gap-4 mb-4 flex-wrap">
+        <div className="hud-panel relative overflow-hidden">
+            {/* Terminal styling decorative line */}
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--kaiju-teal)] opacity-50" />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label className="block text-xs text-gray-500 mb-1">Before</label>
+                    <label className="block text-[10px] uppercase tracking-widest text-[var(--breach-red)] mb-2 font-bold flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-[var(--breach-red)]"></span>
+                        Baseline (Before)
+                    </label>
                     <select
-                        className="border rounded px-2 py-1 text-sm"
+                        className="hud-select"
                         value={beforeId}
                         onChange={(e) => setBeforeId(e.target.value)}
                     >
@@ -70,9 +76,12 @@ export default function SnapshotCompareClient({
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs text-gray-500 mb-1">After</label>
+                    <label className="block text-[10px] uppercase tracking-widest text-[var(--clear-green)] mb-2 font-bold flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-[var(--clear-green)]"></span>
+                        Current State (After)
+                    </label>
                     <select
-                        className="border rounded px-2 py-1 text-sm"
+                        className="hud-select"
                         value={afterId}
                         onChange={(e) => setAfterId(e.target.value)}
                     >
@@ -85,28 +94,34 @@ export default function SnapshotCompareClient({
                 </div>
             </div>
 
-            {beforeId === afterId ? (
-                <p className="text-sm text-gray-500 mb-4">
-                    Select two different snapshots to compare.
-                </p>
-            ) : (
-                <p className="text-sm text-gray-600 mb-4">
-                    {changedCount === 0
-                        ? "No differences detected between these snapshots."
-                        : `${changedCount} changed line(s) detected.`}
-                </p>
-            )}
+            <div className="mb-6 border-y border-[var(--border-dim)] py-3">
+                {beforeId === afterId ? (
+                    <p className="text-[12px] text-[#8c9baf] tracking-widest font-bold">
+                        &gt; SELECT TWO DISTINCT SNAPSHOTS TO INITIALIZE DIFF ENGINE.
+                    </p>
+                ) : (
+                    <p className="text-[12px] tracking-widest font-bold flex items-center gap-2 text-[#E8ECF1]">
+                        &gt; DIFF ANALYSIS: 
+                        {changedCount === 0 ? (
+                            <span className="text-[var(--clear-green)]">100% MATCH. NO ANOMALIES.</span>
+                        ) : (
+                            <span className="text-[var(--warning-amber)]">{changedCount} MUTATIONS DETECTED.</span>
+                        )}
+                    </p>
+                )}
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                    <h2 className="text-sm font-medium mb-2">
-                        {formatDate(before.capturedAt)}
+                    <h2 className="text-[11px] font-bold tracking-widest text-[#8c9baf] mb-3 uppercase flex justify-between">
+                        <span>Baseline Data</span>
+                        <span className="opacity-60 font-mono">{before.contentHash.substring(0, 8)}</span>
                     </h2>
-                    <pre className="border rounded p-3 text-xs overflow-auto max-h-[500px] whitespace-pre-wrap">
+                    <pre className="diff-pre p-4 text-[12px] overflow-auto max-h-[600px] whitespace-pre-wrap leading-loose">
                         {beforeMarked.map((line, i) => (
                             <div
                                 key={i}
-                                className={line.changed ? "bg-red-100" : undefined}
+                                className={`diff-line ${line.changed ? "diff-line-removed" : "diff-line-unchanged"}`}
                             >
                                 {line.text || "\u00A0"}
                             </div>
@@ -114,14 +129,15 @@ export default function SnapshotCompareClient({
                     </pre>
                 </div>
                 <div>
-                    <h2 className="text-sm font-medium mb-2">
-                        {formatDate(after.capturedAt)}
+                    <h2 className="text-[11px] font-bold tracking-widest text-[#8c9baf] mb-3 uppercase flex justify-between">
+                        <span>Current Data</span>
+                        <span className="opacity-60 font-mono">{after.contentHash.substring(0, 8)}</span>
                     </h2>
-                    <pre className="border rounded p-3 text-xs overflow-auto max-h-[500px] whitespace-pre-wrap">
+                    <pre className="diff-pre p-4 text-[12px] overflow-auto max-h-[600px] whitespace-pre-wrap leading-loose">
                         {afterMarked.map((line, i) => (
                             <div
                                 key={i}
-                                className={line.changed ? "bg-green-100" : undefined}
+                                className={`diff-line ${line.changed ? "diff-line-added" : "diff-line-unchanged"}`}
                             >
                                 {line.text || "\u00A0"}
                             </div>

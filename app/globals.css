@@ -2,14 +2,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --void-black: #0A0E14;
-  --hull-steel: #151B24;
-  --hull-steel-light: #1D2530;
-  --warning-amber: #FFB100;
-  --kaiju-teal: #00D9C0;
-  --breach-red: #FF3B3B;
-  --clear-green: #2E7D32;
-  --border-dim: #2C3644;
+  --void-black: #05080b;
+  --hull-steel: #0d1218;
+  --hull-steel-light: #161e27;
+  --warning-amber: #F0A500;
+  --kaiju-teal: #00E6CC;
+  --breach-red: #FF2A2A;
+  --clear-green: #00D364;
+  --border-dim: #1c2633;
+  --border-glow: rgba(0, 230, 204, 0.3);
 }
 
 * {
@@ -18,25 +19,28 @@
 
 body {
   background-color: var(--void-black);
-  color: #E8ECF1;
+  color: #D3D8E0;
   font-family: 'JetBrains Mono', monospace;
   background-image:
-    radial-gradient(circle at 20% 0%, rgba(0, 217, 192, 0.05), transparent 45%),
-    radial-gradient(circle at 100% 30%, rgba(255, 177, 0, 0.04), transparent 40%),
-    linear-gradient(rgba(255, 177, 0, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 177, 0, 0.015) 1px, transparent 1px);
-  background-size: auto, auto, 40px 40px, 40px 40px;
+    radial-gradient(circle at 50% 0%, rgba(0, 230, 204, 0.04), transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(255, 42, 42, 0.03), transparent 60%),
+    linear-gradient(rgba(0, 230, 204, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 230, 204, 0.015) 1px, transparent 1px);
+  background-size: auto, auto, 60px 60px, 60px 60px;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 h1, h2, h3, h4 {
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
+  margin-top: 0;
 }
 
 h1 {
-  text-shadow: 0 0 18px rgba(255, 177, 0, 0.25);
+  text-shadow: 0 0 20px rgba(0, 230, 204, 0.3);
 }
 
 /* --- REUSABLE HUD PANELS --- */
@@ -45,10 +49,8 @@ h1 {
   background: linear-gradient(180deg, var(--hull-steel-light), var(--hull-steel));
   border: 1px solid var(--border-dim);
   padding: 24px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .hud-panel-compact {
@@ -60,11 +62,13 @@ h1 {
 .hud-panel::after {
   content: "";
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: var(--warning-amber);
+  width: 14px;
+  height: 14px;
+  border-color: var(--kaiju-teal);
   border-style: solid;
   pointer-events: none;
+  opacity: 0.7;
+  transition: border-color 0.3s ease, opacity 0.3s ease;
 }
 
 .hud-panel::before {
@@ -80,9 +84,15 @@ h1 {
 }
 
 .hud-panel:hover {
-  border-color: rgba(0, 217, 192, 0.4);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 217, 192, 0.1);
+  border-color: rgba(0, 230, 204, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 230, 204, 0.08);
   transform: translateY(-2px);
+}
+
+.hud-panel:hover::before,
+.hud-panel:hover::after {
+  border-color: var(--kaiju-teal);
+  opacity: 1;
 }
 
 /* Severity Accent Rail for Alerts */
@@ -90,36 +100,42 @@ h1 {
   border-left: 4px solid var(--accent-color, var(--border-dim));
 }
 
+.hud-panel-accent::before {
+  border-color: var(--accent-color, var(--kaiju-teal));
+}
+
 /* --- HUD INTERACTIVE ELEMENTS --- */
 .hud-button {
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: var(--warning-amber);
+  letter-spacing: 0.1em;
+  background: var(--kaiju-teal);
   color: var(--void-black);
   border: none;
-  padding: 10px 20px;
-  font-weight: 600;
-  font-size: 13px;
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   clip-path: polygon(0 0, 92% 0, 100% 25%, 100% 100%, 8% 100%, 0 75%);
 }
 
 .hud-button:hover:not(:disabled) {
-  background: #FFC940;
-  box-shadow: 0 0 12px rgba(255, 177, 0, 0.3);
+  background: #24FFEA;
+  box-shadow: 0 0 16px rgba(0, 230, 204, 0.5);
+  transform: translateY(-1px);
 }
 
 .hud-button:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .hud-button:disabled {
   background: var(--border-dim);
-  color: #63758a;
+  color: #52637a;
   cursor: not-allowed;
   clip-path: none;
+  box-shadow: none;
 }
 
 .hud-button-outline {
@@ -131,42 +147,78 @@ h1 {
   border: 1px solid var(--kaiju-teal);
   padding: 8px 18px;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  clip-path: polygon(0 0, 95% 0, 100% 20%, 100% 100%, 5% 100%, 0 80%);
 }
 
 .hud-button-outline:hover:not(:disabled) {
-  background: rgba(0, 217, 192, 0.12);
-  box-shadow: 0 0 8px rgba(0, 217, 192, 0.2);
+  background: rgba(0, 230, 204, 0.12);
+  box-shadow: 0 0 12px rgba(0, 230, 204, 0.2);
+}
+
+.hud-button-outline:disabled {
+  border-color: var(--border-dim);
+  color: #52637a;
+  cursor: not-allowed;
+  clip-path: none;
 }
 
 .hud-input {
   width: 100%;
-  background: rgba(10, 14, 20, 0.8);
+  background: rgba(5, 8, 11, 0.7);
   border: 1px solid var(--border-dim);
   color: #E8ECF1;
-  padding: 11px;
+  padding: 12px 14px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 
 .hud-input:focus {
   outline: none;
   border-color: var(--kaiju-teal);
-  box-shadow: 0 0 8px rgba(0, 217, 192, 0.15);
+  box-shadow: 0 0 12px rgba(0, 230, 204, 0.2);
+  background: rgba(5, 8, 11, 0.9);
+}
+
+.hud-select {
+  width: 100%;
+  background: rgba(5, 8, 11, 0.7);
+  border: 1px solid var(--border-dim);
+  color: #E8ECF1;
+  padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  appearance: none;
+  cursor: pointer;
+}
+
+.hud-select:focus {
+  outline: none;
+  border-color: var(--kaiju-teal);
+  box-shadow: 0 0 12px rgba(0, 230, 204, 0.2);
+}
+
+.hud-select option {
+  background: var(--hull-steel);
+  color: #E8ECF1;
 }
 
 /* --- STATUS & BADGES --- */
 .badge {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 11px;
   font-weight: 700;
+  font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--void-black);
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
 }
 
 .status-dot {
@@ -175,39 +227,41 @@ h1 {
   height: 8px;
   border-radius: 50%;
   background: var(--clear-green);
-  box-shadow: 0 0 8px var(--clear-green);
-  animation: blink-dot 2s ease-in-out infinite;
+  box-shadow: 0 0 10px var(--clear-green);
+  animation: blink-dot 2.5s ease-in-out infinite;
 }
 
 @keyframes blink-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.9); }
-}
-
-/* --- MONITORING GRID ENGINE --- */
-.asset-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--clear-green); }
+  50% { opacity: 0.4; transform: scale(0.9); box-shadow: 0 0 4px var(--clear-green); }
 }
 
 /* --- DYNAMIC FX / ANIMATIONS --- */
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.pulse-glow-high {
+  animation: pulse-glow-red 2s ease-in-out infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 4px 0 rgba(255, 59, 59, 0.3); border-color: rgba(255, 59, 59, 0.4); }
-  50% { box-shadow: 0 0 16px 2px rgba(255, 59, 59, 0.6); border-color: rgba(255, 59, 59, 0.8); }
+@keyframes pulse-glow-red {
+  0%, 100% { box-shadow: 0 0 4px 0 rgba(255, 42, 42, 0.2); border-color: rgba(255, 42, 42, 0.3); }
+  50% { box-shadow: 0 0 20px 2px rgba(255, 42, 42, 0.5); border-color: rgba(255, 42, 42, 0.7); }
+}
+
+.pulse-glow-amber {
+  animation: pulse-glow-amber 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-amber {
+  0%, 100% { box-shadow: 0 0 4px 0 rgba(240, 165, 0, 0.2); border-color: rgba(240, 165, 0, 0.3); }
+  50% { box-shadow: 0 0 20px 2px rgba(240, 165, 0, 0.4); border-color: rgba(240, 165, 0, 0.6); }
 }
 
 .fade-in-up {
   opacity: 0;
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -222,14 +276,59 @@ h1 {
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--kaiju-teal), transparent);
-  animation: scan 4s linear infinite;
-  opacity: 0.4;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 230, 204, 0.5), transparent);
+  animation: scan 6s linear infinite;
+  opacity: 0.3;
   pointer-events: none;
 }
 
 @keyframes scan {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(350px); }
+  0% { transform: translateY(-20px); }
+  100% { transform: translateY(800px); }
+}
+
+/* --- DIFF STYLES --- */
+.diff-pre {
+  background: rgba(5, 8, 11, 0.9);
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.diff-line {
+  padding: 2px 8px;
+  border-left: 2px solid transparent;
+}
+
+.diff-line-added {
+  background: rgba(0, 211, 100, 0.1);
+  border-left-color: var(--clear-green);
+  color: #E8ECF1;
+}
+
+.diff-line-added::before {
+  content: "+ ";
+  color: var(--clear-green);
+}
+
+.diff-line-removed {
+  background: rgba(255, 42, 42, 0.1);
+  border-left-color: var(--breach-red);
+  color: #E8ECF1;
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 42, 42, 0.5);
+}
+
+.diff-line-removed::before {
+  content: "- ";
+  color: var(--breach-red);
+}
+
+.diff-line-unchanged {
+  color: #8c9baf;
+}
+
+.diff-line-unchanged::before {
+  content: "  ";
 }
