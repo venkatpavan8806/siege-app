@@ -114,6 +114,13 @@ export async function safeFetch(inputUrl: string): Promise<SafeFetchResult> {
         signal: controller.signal,
         headers: { "User-Agent": "SiegeAssetMonitor/1.0" },
       });
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new SsrfBlockedError(
+          `Request timed out after ${FETCH_TIMEOUT_MS}ms`
+        );
+      }
+      throw err;
     } finally {
       clearTimeout(timeout);
     }
