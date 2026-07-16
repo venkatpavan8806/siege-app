@@ -69,8 +69,9 @@ model Alert {
   snapshot       Snapshot    @relation(fields: [snapshotId], references: [id])
   diffSummary    String
   aiRiskScore    Int // 0-100, produced by lib/llm-risk-scoring.ts
-  aiExplanation  String
-  severity       String // LOW | MEDIUM | HIGH — derived from aiRiskScore, not free text from the model
+  aiExplanation     String
+  recommendedAction String @default("Not assessed — generated before this field existed") // concrete remediation step, produced by lib/llm-risk-scoring.ts
+  severity          String // LOW | MEDIUM | HIGH — derived from aiRiskScore, not free text from the model
   status         AlertStatus @default(OPEN)
   createdAt      DateTime    @default(now())
 

@@ -106,6 +106,7 @@ export const POST = withAuthErrors(
           diffSummary: "Content changed; automated risk scoring unavailable.",
           aiRiskScore: -1,
           aiExplanation: "Risk scoring failed — needs manual review.",
+          recommendedAction: "Manually review this change — automated analysis failed.",
           severity: "MEDIUM",
         },
       });
@@ -119,6 +120,7 @@ export const POST = withAuthErrors(
         diffSummary: "Content changed since last check.",
         aiRiskScore: assessment.aiRiskScore,
         aiExplanation: assessment.aiExplanation,
+        recommendedAction: assessment.recommendedAction,
         severity: assessment.severity,
       },
     });

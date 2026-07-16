@@ -24,6 +24,7 @@ const MODEL = "claude-sonnet-4-6";
 export type RiskAssessment = {
   aiRiskScore: number; // 0-100
   aiExplanation: string;
+  recommendedAction: string; // NEW: concrete remediation step, PS requirement
   severity: "LOW" | "MEDIUM" | "HIGH";
 };
 
@@ -46,10 +47,14 @@ messages, hacker signatures, spam links, replaced homepage content) versus a
 benign update (typo fix, new blog post, price update, routine content edit).
 
 Respond with ONLY a JSON object, no prose before or after, matching exactly:
-{"riskScore": <integer 0-100>, "explanation": "<one or two sentences>"}
+{"riskScore": <integer 0-100>, "explanation": "<one or two sentences>", "recommendedAction": "<one or two sentence concrete next step a defender should take right now>"}
 
 riskScore guide: 0-20 clearly benign, 21-60 ambiguous/needs review,
-61-100 strong defacement indicators.`;
+61-100 strong defacement indicators.
+
+recommendedAction should be a specific, actionable step (e.g. "Take the asset
+offline and rotate any credentials embedded in its forms" or "No action
+needed, continue routine monitoring"), not a restatement of the explanation.`;
 
 function deriveSeverity(score: number): "LOW" | "MEDIUM" | "HIGH" {
   if (score >= 61) return "HIGH";
@@ -88,7 +93,7 @@ export async function assessDefacementRisk(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 300,
+      max_tokens: 350,
       system: SYSTEM_PROMPT,
       messages: [
         { role: "user", content: buildUserPrompt(oldText, newText) },
@@ -106,7 +111,11 @@ export async function assessDefacementRisk(
   const textBlock = data.content?.find((b: any) => b.type === "text");
   const raw: string = textBlock?.text ?? "";
 
-  let parsed: { riskScore: unknown; explanation: unknown };
+  let parsed: {
+    riskScore: unknown;
+    explanation: unknown;
+    recommendedAction: unknown;
+  };
   try {
     // Strip accidental code-fence wrapping before parsing.
     const cleaned = raw.replace(/```json|```/g, "").trim();
@@ -125,9 +134,16 @@ export async function assessDefacementRisk(
       ? parsed.explanation.slice(0, 500) // cap length, this gets rendered in UI
       : "No explanation provided.";
 
+  const recommendedAction =
+    typeof parsed.recommendedAction === "string" &&
+      parsed.recommendedAction.trim().length > 0
+      ? parsed.recommendedAction.slice(0, 500) // cap length, this gets rendered in UI
+      : "No recommendation provided — review manually.";
+
   return {
     aiRiskScore: Math.round(score),
     aiExplanation: explanation,
+    recommendedAction,
     severity: deriveSeverity(score), // derived server-side, never trust a
     // severity string the model might emit
   };
