@@ -1,0 +1,91 @@
+// prisma/schema.prisma
+// Postgres. Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ANALYST
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(ANALYST)
+  createdAt    DateTime @default(now())
+
+  assets    Asset[]
+  auditLogs AuditLog[]
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  url       String
+  name      String
+  addedById String
+  addedBy   User     @relation(fields: [addedById], references: [id])
+  createdAt DateTime @default(now())
+
+  snapshots Snapshot[]
+  alerts    Alert[]
+
+  @@index([addedById])
+}
+
+model Snapshot {
+  id                   String   @id @default(cuid())
+  assetId              String
+  asset                Asset    @relation(fields: [assetId], references: [id])
+  contentHash          String
+  // Sanitized/escaped text only. NEVER store or render raw HTML from the
+  // fetched target as live markup — see lib/ssrf-guard.ts and dashboard notes.
+  rawContentSanitized  String
+  capturedAt           DateTime @default(now())
+
+  alerts Alert[]
+
+  @@index([assetId, capturedAt])
+}
+
+model Alert {
+  id             String      @id @default(cuid())
+  assetId        String
+  asset          Asset       @relation(fields: [assetId], references: [id])
+  snapshotId     String
+  snapshot       Snapshot    @relation(fields: [snapshotId], references: [id])
+  diffSummary    String
+  aiRiskScore    Int // 0-100, produced by lib/llm-risk-scoring.ts
+  aiExplanation  String
+  severity       String // LOW | MEDIUM | HIGH — derived from aiRiskScore, not free text from the model
+  status         AlertStatus @default(OPEN)
+  createdAt      DateTime    @default(now())
+
+  @@index([assetId, status])
+}
+
+// Append-only. No update/delete route should ever touch this model.
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  action       String
+  resourceType String
+  resourceId   String
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
