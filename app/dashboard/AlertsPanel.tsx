@@ -6,6 +6,7 @@ type Alert = {
   id: string;
   aiRiskScore: number;
   aiExplanation: string;
+  recommendedAction: string;
   severity: string;
   status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED";
   createdAt: string;
@@ -126,6 +127,10 @@ export default function AlertsPanel() {
 
               <p style={{ marginTop: 6, fontSize: 14, whiteSpace: "pre-wrap" }}>
                 {alert.aiExplanation}
+              </p>
+
+              <p style={{ marginTop: 6, fontSize: 13, color: "#444" }}>
+                <strong>Recommended action:</strong> {alert.recommendedAction}
               </p>
 
               {alert.status !== "RESOLVED" && (
