@@ -5,6 +5,7 @@ import AddAssetForm from "./AddAssetForm";
 import LogoutButton from "./LogoutButton";
 import CheckButton from "./CheckButton";
 import AlertsPanel from "./AlertsPanel";
+import Link from "next/link";
 
 
 export default async function DashboardPage() {
@@ -48,12 +49,17 @@ export default async function DashboardPage() {
                             <strong>{asset.name}</strong>
                             <div style={{ color: "#666", fontSize: 14 }}>{asset.url}</div>
                             <CheckButton assetId={asset.id} />
+                            <div style={{ marginTop: 6 }}>
+                                <Link href={`/dashboard/assets/${asset.id}/compare`} style={{ fontSize: 14 }}>
+                                    Compare Snapshots
+                                </Link>
+                            </div>
                         </li>
                     ))}
                 </ul>
             )}
             <AddAssetForm />
-          <AlertsPanel />
+            <AlertsPanel />
         </div>
     );
 }
