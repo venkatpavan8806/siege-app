@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AddAssetForm from "./AddAssetForm";
 import LogoutButton from "./LogoutButton";
+import CheckButton from "./CheckButton";
+import AlertsPanel from "./AlertsPanel";
 
 
 export default async function DashboardPage() {
@@ -45,11 +47,13 @@ export default async function DashboardPage() {
                         >
                             <strong>{asset.name}</strong>
                             <div style={{ color: "#666", fontSize: 14 }}>{asset.url}</div>
+                            <CheckButton assetId={asset.id} />
                         </li>
                     ))}
                 </ul>
             )}
             <AddAssetForm />
+          <AlertsPanel />
         </div>
     );
 }

@@ -13,6 +13,7 @@ import { requireAuth, AuthError, withAuthErrors } from "@/lib/rbac";
 import { safeFetch, SsrfBlockedError } from "@/lib/ssrf-guard";
 import { assessDefacementRisk } from "@/lib/llm-risk-scoring";
 import { record } from "@/lib/audit";
+import { allowRequest } from "@/lib/rate-limit";
 
 // Extremely bare-bones HTML-to-text so we never store/diff/render raw
 // markup. This is intentionally conservative — good enough to strip tags
@@ -31,6 +32,13 @@ function stripToText(html: string): string {
 export const POST = withAuthErrors(
   async (req: Request, { params }: { params: { id: string } }) => {
     const session = await requireAuth();
+
+    if (!allowRequest(session.userId)) {
+      return NextResponse.json(
+        { error: "Too many checks. Please wait a minute and try again." },
+        { status: 429 }
+      );
+    }
 
     const asset = await prisma.asset.findUnique({ where: { id: params.id } });
     if (!asset) throw new AuthError("Not found", 404);
