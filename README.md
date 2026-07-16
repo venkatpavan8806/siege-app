@@ -6,12 +6,6 @@ explainable risk score.
 
 **Domain:** Cyber Security & Web Mining (PS-005)
 
-## AI / BYOK Disclosure
-
-Risk classification (`lib/llm-risk-scoring.ts`) calls the **Anthropic API**
-directly using our own API key, model **`claude-sonnet-4-6`**. The key is
-read from `ANTHROPIC_API_KEY` and used server-side only — it is never sent
-to the client. No mocked or rule-based logic stands in for this feature.
 
 ## Stack
 
