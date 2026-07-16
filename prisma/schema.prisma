@@ -33,12 +33,13 @@ model User {
 }
 
 model Asset {
-  id        String   @id @default(cuid())
-  url       String
-  name      String
-  addedById String
-  addedBy   User     @relation(fields: [addedById], references: [id])
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  url         String
+  name        String
+  addedById   String
+  addedBy     User     @relation(fields: [addedById], references: [id])
+  createdAt   DateTime @default(now())
+  scanEnabled Boolean  @default(true)
 
   snapshots Snapshot[]
   alerts    Alert[]
@@ -77,20 +78,6 @@ model Alert {
   @@index([assetId, status])
 }
 
-model Asset {
-  id          String   @id @default(cuid())
-  url         String
-  name        String
-  addedById   String
-  addedBy     User     @relation(fields: [addedById], references: [id])
-  createdAt   DateTime @default(now())
-  scanEnabled Boolean  @default(true)
-
-  snapshots Snapshot[]
-  alerts    Alert[]
-
-  @@index([addedById])
-}
 
 // Append-only. No update/delete route should ever touch this model.
 model AuditLog {
