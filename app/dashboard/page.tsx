@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AddAssetForm from "./AddAssetForm";
+import LogoutButton from "./LogoutButton";
 
 
 export default async function DashboardPage() {
@@ -19,9 +20,12 @@ export default async function DashboardPage() {
     return (
         <div style={{ maxWidth: 720, margin: "40px auto", fontFamily: "sans-serif" }}>
             <h1>Dashboard</h1>
-            <p style={{ color: "#666" }}>
-                Signed in as role: <strong>{session.role}</strong>
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <p style={{ color: "#666" }}>
+                    Signed in as role: <strong>{session.role}</strong>
+                </p>
+                <LogoutButton />
+            </div>
 
             <h2 style={{ marginTop: 32 }}>Monitored Assets</h2>
 
