@@ -81,7 +81,10 @@ export default async function DashboardPage() {
                                     <div className="text-[#8c9baf] text-[12px] mb-4 p-2 bg-[rgba(5,8,11,0.5)] border border-[var(--border-dim)] font-mono truncate">
                                         {asset.url}
                                     </div>
-                                    <CheckButton assetId={asset.id} />
+                                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                                        <CheckButton assetId={asset.id} />
+                                        <ScanToggle assetId={asset.id} initialEnabled={asset.scanEnabled} />
+                                    </div>
                                 </div>
                             ))}
                         </div>
