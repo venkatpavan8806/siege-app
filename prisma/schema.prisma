@@ -74,9 +74,6 @@ model Alert {
   severity          String // LOW | MEDIUM | HIGH — derived from aiRiskScore, not free text from the model
   status         AlertStatus @default(OPEN)
   createdAt      DateTime    @default(now())
-  isCampaign     Boolean     @default(false)
-  campaignNote   String?
-
   @@index([assetId, status])
 }
 
