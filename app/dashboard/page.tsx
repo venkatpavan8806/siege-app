@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import AddAssetForm from "./AddAssetForm";
+
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -43,6 +45,7 @@ export default async function DashboardPage() {
                     ))}
                 </ul>
             )}
+            <AddAssetForm />
         </div>
     );
 }
