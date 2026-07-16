@@ -12,10 +12,13 @@ export const GET = withAuthErrors(
         const session = await requireAuth();
 
         const asset = await prisma.asset.findUnique({ where: { id: params.id } });
-        if (!asset) throw new AuthError("Not found", 404);
 
-        if (session.role !== "ADMIN" && asset.addedById !== session.userId) {
-            throw new AuthError("Forbidden", 403);
+        // Same "Not found" whether the asset doesn't exist OR isn't this
+        // user's — never split this into 404 vs 403. See app/api/assets/[id]/route.ts
+        // for why: a split leaks which asset IDs exist and belong to
+        // other users through the status code alone.
+        if (!asset || (session.role !== "ADMIN" && asset.addedById !== session.userId)) {
+            throw new AuthError("Not found", 404);
         }
 
         const url = new URL(req.url);

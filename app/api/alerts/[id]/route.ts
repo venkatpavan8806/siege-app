@@ -9,12 +9,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth, AuthError, withAuthErrors } from "@/lib/rbac";
 import { record } from "@/lib/audit";
+import { allowAlertsWrite } from "@/lib/rate-limit";
 
 const ALLOWED_STATUSES = ["ACKNOWLEDGED", "RESOLVED"] as const;
 
 export const PATCH = withAuthErrors(
   async (req: Request, { params }: { params: { id: string } }) => {
     const session = await requireAuth();
+
+    if (!allowAlertsWrite(session.userId)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a minute and try again." },
+        { status: 429 }
+      );
+    }
 
     const body = await req.json().catch(() => null);
     const status = body?.status;
@@ -30,11 +38,13 @@ export const PATCH = withAuthErrors(
       where: { id: params.id },
       include: { asset: true },
     });
-    if (!alert) throw new AuthError("Not found", 404);
 
-    // Ownership check via the parent asset, same as the check route.
-    if (session.role !== "ADMIN" && alert.asset.addedById !== session.userId) {
-      throw new AuthError("Forbidden", 403);
+    // Same "Not found" whether the alert doesn't exist OR its parent
+    // asset isn't this user's — never split this into 404 vs 403. See
+    // app/api/assets/[id]/route.ts for why: a split leaks which alert
+    // IDs exist and belong to other users through the status code alone.
+    if (!alert || (session.role !== "ADMIN" && alert.asset.addedById !== session.userId)) {
+      throw new AuthError("Not found", 404);
     }
 
     const updated = await prisma.alert.update({

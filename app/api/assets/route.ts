@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth, withAuthErrors } from "@/lib/rbac";
 import { record } from "@/lib/audit";
+import { allowAddAsset } from "@/lib/rate-limit";
 
 // GET /api/assets — ADMIN sees all assets, ANALYST sees only their own.
 // This is the "protected records can't be viewed without authorization"
@@ -22,6 +23,14 @@ export const GET = withAuthErrors(async () => {
 // POST /api/assets — any authenticated user can register an asset to monitor.
 export const POST = withAuthErrors(async (req: Request) => {
   const session = await requireAuth();
+
+  if (!allowAddAsset(session.userId)) {
+    return NextResponse.json(
+      { error: "Too many assets added. Please wait a minute and try again." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
 
   const url = typeof body?.url === "string" ? body.url.trim() : "";

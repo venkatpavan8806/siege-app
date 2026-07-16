@@ -15,12 +15,14 @@ export const DELETE = withAuthErrors(
     const session = await requireAuth();
 
     const asset = await prisma.asset.findUnique({ where: { id: params.id } });
-    if (!asset) throw new AuthError("Not found", 404);
 
-    // Ownership check — an ANALYST can only delete assets they added,
-    // ADMIN can delete any.
-    if (session.role !== "ADMIN" && asset.addedById !== session.userId) {
-      throw new AuthError("Forbidden", 403);
+    // Same "Not found" whether the asset doesn't exist OR it exists but
+    // isn't this user's (ANALYST) — never split this into 404 vs 403.
+    // A split lets someone enumerate which asset IDs exist and belong to
+    // other users just from the status code, even though they could
+    // never read the asset itself.
+    if (!asset || (session.role !== "ADMIN" && asset.addedById !== session.userId)) {
+      throw new AuthError("Not found", 404);
     }
 
     // Delete dependent records first, in one transaction, so we never

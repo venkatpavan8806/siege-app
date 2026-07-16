@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword, createSession } from "@/lib/auth";
 import { record } from "@/lib/audit";
+import { allowLoginByIp, allowLoginByAccount, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -11,6 +12,22 @@ export async function POST(req: Request) {
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+  }
+
+  // Two independent limiters, checked before any DB/bcrypt work so a
+  // brute-force attempt doesn't even pay for a password hash comparison:
+  //   - per-IP: stops one source hammering logins (single account or
+  //     spraying across many).
+  //   - per-account: stops a distributed/rotating-IP attacker from
+  //     grinding through passwords for one specific email.
+  // Same 429 shape either way — don't let the response tell an attacker
+  // which limiter tripped.
+  const ip = getClientIp(req);
+  if (!allowLoginByIp(ip) || !allowLoginByAccount(email)) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please wait and try again." },
+      { status: 429 }
+    );
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
