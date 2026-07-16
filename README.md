@@ -67,3 +67,41 @@ Risk classification (`lib/llm-risk-scoring.ts`) calls the **Anthropic API** dire
 - `stripToText()` is a conservative tag-stripper, not a full HTML sanitizer library — sufficient to prevent stored XSS for this build's rendering path, but not a general-purpose sanitizer if the content is ever rendered as HTML elsewhere.
 - No rate limiting on `/api/assets/:id/check` yet — a target worth adding during the Live Game Window if abuse shows up.
 - No user-facing way to change API keys or database connections — these are deployment-level environment variables, not app features.
+
+
+Attacking Instructions — Website Defacement Detection & Vulnerability Assessment Platform
+
+Test account
+Role:     ANALYST
+Email:    tryitout@example.com
+Password: tryitout
+Log in at /login (or wherever your login route is) with these credentials to get an authenticated starting point.
+What this account can do
+
+View assets and alerts it owns
+Trigger a manual check on its own assets (POST /api/assets/:id/check)
+Acknowledge alerts on its own assets
+❌ Cannot resolve alerts — that's restricted to ADMIN only
+❌ Cannot access other users' assets/alerts through normal (intended) use
+
+Where to look
+
+lib/rbac.ts — role + auth checks, called first in every API route
+lib/ssrf-guard.ts — outbound fetch protections for user-supplied URLs
+lib/llm-risk-scoring.ts — LLM-based defacement classification (Anthropic API, server-side only)
+app/api/alerts/[id]/route.ts — alert acknowledge/resolve logic (ownership + role-gated)
+app/api/assets/** — asset creation/check endpoints
+Full architecture notes and known limitations are in the repo's README.md
+
+What's in scope
+
+The live deployed application above
+Everything reachable through the ANALYST account, and anything reachable without authentication
+Attempting privilege escalation from ANALYST to ADMIN-level actions
+Attempting to access or modify resources owned by other users (IDOR-style testing)
+Prompt-injection attempts against the defacement classifier (e.g. via a registered asset URL whose content tries to influence the model's output)
+Standard web vulnerability classes: auth bypass, session handling, input validation, XSS, SSRF, rate limiting, information disclosure, etc.
+
+What's out of scope
+
+**Our actual server infrastructure/credentials (API keys, DB connection strings) — these are not something you need; if you find a path that leaks them, that's a valid finding to report, not something to use further**
