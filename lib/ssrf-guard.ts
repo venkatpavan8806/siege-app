@@ -28,6 +28,17 @@ const MAX_REDIRECTS = 3;
 
 class SsrfBlockedError extends Error {}
 
+function unwrapIPv4Mapped(ip: string): string | null {
+  const lower = ip.toLowerCase();
+  for (const prefix of ["::ffff:", "::ffff:0:"]) {
+    if (lower.startsWith(prefix)) {
+      const rest = ip.slice(prefix.length);
+      if (net.isIPv4(rest)) return rest;
+    }
+  }
+  return null;
+}
+
 function isPrivateOrReservedIp(ip: string): boolean {
   if (net.isIPv4(ip)) {
     const [a, b] = ip.split(".").map(Number);
