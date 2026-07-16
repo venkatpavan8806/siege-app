@@ -6,6 +6,7 @@ import LogoutButton from "./LogoutButton";
 import CheckButton from "./CheckButton";
 import AlertsPanel from "./AlertsPanel";
 import Link from "next/link";
+import ScanToggle from "./ScanToggle";
 
 export default async function DashboardPage() {
     const session = await getSession();
