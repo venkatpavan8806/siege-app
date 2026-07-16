@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -14,22 +13,18 @@ export default function LoginPage() {
         e.preventDefault();
         setError(null);
         setLoading(true);
-
         try {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
-
             const data = await res.json();
-
             if (!res.ok) {
                 setError(data.error ?? "Login failed");
                 setLoading(false);
                 return;
             }
-
             router.push("/dashboard");
         } catch {
             setError("Something went wrong. Try again.");
@@ -38,49 +33,56 @@ export default function LoginPage() {
     }
 
     return (
-        <div style={{ maxWidth: 360, margin: "80px auto", fontFamily: "sans-serif" }}>
-            <h1 style={{ marginBottom: 24 }}>Sign in</h1>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: 12 }}>
-                    <label htmlFor="email" style={{ display: "block", marginBottom: 4 }}>
-                        Email
-                    </label>
-                    <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        style={{ width: "100%", padding: 8 }}
-                    />
-                </div>
+        <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="hud-panel w-full max-w-sm">
+                <p className="text-xs tracking-widest text-[var(--kaiju-teal)] mb-1">
+                    SYSTEM SIEGE // PS-005
+                </p>
+                <h1 className="text-2xl mb-6">Breach Command</h1>
 
-                <div style={{ marginBottom: 12 }}>
-                    <label htmlFor="password" style={{ display: "block", marginBottom: 4 }}>
-                        Password
-                    </label>
-                    <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{ width: "100%", padding: 8 }}
-                    />
-                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label htmlFor="email" className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
+                            Operator Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="hud-input"
+                        />
+                    </div>
+                    <div className="mb-5">
+                        <label htmlFor="password" className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
+                            Access Code
+                        </label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="hud-input"
+                        />
+                    </div>
 
-                {error && (
-                    <p style={{ color: "crimson", marginBottom: 12 }}>{error}</p>
-                )}
+                    {error && (
+                        <p className="text-[var(--breach-red)] text-sm mb-4">
+                            ⚠ {error}
+                        </p>
+                    )}
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ width: "100%", padding: 10, cursor: "pointer" }}
-                >
-                    {loading ? "Signing in..." : "Sign in"}
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="hud-button w-full"
+                    >
+                        {loading ? "Authenticating..." : "Initiate Session"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

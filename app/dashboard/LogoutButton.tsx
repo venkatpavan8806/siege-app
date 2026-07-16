@@ -15,12 +15,8 @@ export default function LogoutButton() {
     }
 
     return (
-        <button
-            onClick={handleLogout}
-            disabled={loading}
-            style={{ padding: "6px 14px", cursor: "pointer" }}
-        >
-            {loading ? "Signing out..." : "Sign out"}
+        <button onClick={handleLogout} disabled={loading} className="hud-button">
+            {loading ? "Signing out..." : "Sign Out"}
         </button>
     );
 }

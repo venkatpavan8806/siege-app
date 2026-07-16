@@ -25,8 +25,6 @@ export default function AddAssetForm() {
             const data = await res.json();
 
             if (!res.ok) {
-                // Surface the server's own validation message rather than
-                // re-implementing URL validation logic here.
                 setError(data.error ?? "Failed to add asset");
                 setLoading(false);
                 return;
@@ -35,7 +33,7 @@ export default function AddAssetForm() {
             setUrl("");
             setName("");
             setLoading(false);
-            router.refresh(); // re-fetches the server component's asset list
+            router.refresh();
         } catch {
             setError("Something went wrong. Try again.");
             setLoading(false);
@@ -43,19 +41,11 @@ export default function AddAssetForm() {
     }
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            style={{
-                border: "1px solid #ddd",
-                borderRadius: 6,
-                padding: 16,
-                marginTop: 16,
-            }}
-        >
-            <h3 style={{ marginTop: 0 }}>Add Asset</h3>
+        <form onSubmit={handleSubmit} className="hud-panel mt-8">
+            <h3 className="text-lg mt-0 mb-4">Register New Asset</h3>
 
-            <div style={{ marginBottom: 12 }}>
-                <label htmlFor="name" style={{ display: "block", marginBottom: 4 }}>
+            <div className="mb-4">
+                <label htmlFor="name" className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
                     Name
                 </label>
                 <input
@@ -64,13 +54,13 @@ export default function AddAssetForm() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    style={{ width: "100%", padding: 8 }}
+                    className="hud-input"
                 />
             </div>
 
-            <div style={{ marginBottom: 12 }}>
-                <label htmlFor="url" style={{ display: "block", marginBottom: 4 }}>
-                    URL
+            <div className="mb-4">
+                <label htmlFor="url" className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
+                    Target URL
                 </label>
                 <input
                     id="url"
@@ -79,14 +69,16 @@ export default function AddAssetForm() {
                     onChange={(e) => setUrl(e.target.value)}
                     required
                     placeholder="https://example.com"
-                    style={{ width: "100%", padding: 8 }}
+                    className="hud-input"
                 />
             </div>
 
-            {error && <p style={{ color: "crimson", marginBottom: 12 }}>{error}</p>}
+            {error && (
+                <p className="text-[var(--breach-red)] text-sm mb-4">⚠ {error}</p>
+            )}
 
-            <button type="submit" disabled={loading} style={{ padding: "8px 16px" }}>
-                {loading ? "Adding..." : "Add Asset"}
+            <button type="submit" disabled={loading} className="hud-button">
+                {loading ? "Registering..." : "Add Asset"}
             </button>
         </form>
     );

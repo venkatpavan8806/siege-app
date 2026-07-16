@@ -20,11 +20,11 @@ type Alert = {
 function severityColor(severity: string): string {
   switch (severity) {
     case "HIGH":
-      return "#c0392b";
+      return "var(--breach-red)";
     case "MEDIUM":
-      return "#e67e22";
+      return "var(--warning-amber)";
     case "LOW":
-      return "#27ae60";
+      return "var(--clear-green)";
     default:
       return "#7f8c8d";
   }
@@ -79,67 +79,55 @@ export default function AlertsPanel() {
     }
   }
 
-  if (loading) return <p style={{ color: "#888" }}>Loading alerts...</p>;
+  if (loading) return <p className="text-gray-500 mt-10">Loading alerts...</p>;
 
   return (
-    <div style={{ marginTop: 32 }}>
-      <h2>Alerts</h2>
+    <div className="mt-12">
+      <h2 className="text-xl mb-4">Alerts</h2>
 
       {error && (
-        <div style={{ color: "#c0392b", fontSize: 14, marginBottom: 12 }}>
-          {error}
-        </div>
+        <div className="text-[var(--breach-red)] text-sm mb-4">⚠ {error}</div>
       )}
 
       {alerts.length === 0 ? (
-        <p style={{ color: "#888" }}>No alerts yet.</p>
+        <p className="text-gray-500">No alerts yet. Assets are clear.</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <div className="flex flex-col gap-4">
           {alerts.map((alert) => (
-            <li
+            <div
               key={alert.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 6,
-                padding: 12,
-                marginBottom: 8,
-              }}
+              className="hud-panel hud-panel-accent"
+              style={{ ["--accent-color" as any]: severityColor(alert.severity) }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div className="flex items-center gap-3 flex-wrap">
                 <span
-                  style={{
-                    display: "inline-block",
-                    padding: "2px 8px",
-                    borderRadius: 4,
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    backgroundColor: severityColor(alert.severity),
-                  }}
+                  className="badge"
+                  style={{ backgroundColor: severityColor(alert.severity) }}
                 >
                   {alert.severity}
                 </span>
-                <strong>{alert.asset.name}</strong>
-                <span style={{ color: "#666", fontSize: 13 }}>
-                  ({alert.status})
+                <strong className="text-base">{alert.asset.name}</strong>
+                <span className="text-gray-500 text-xs uppercase tracking-wide">
+                  {alert.status}
                 </span>
               </div>
 
-              <p style={{ marginTop: 6, fontSize: 14, whiteSpace: "pre-wrap" }}>
+              <p className="mt-3 text-sm whitespace-pre-wrap">
                 {alert.aiExplanation}
               </p>
 
-              <p style={{ marginTop: 6, fontSize: 13, color: "#444" }}>
-                <strong>Recommended action:</strong> {alert.recommendedAction}
+              <p className="mt-2 text-sm text-[var(--kaiju-teal)]">
+                <strong className="text-gray-400">Recommended action:</strong>{" "}
+                {alert.recommendedAction}
               </p>
 
               {alert.status !== "RESOLVED" && (
-                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                <div className="mt-4 flex gap-3">
                   {alert.status === "OPEN" && (
                     <button
                       onClick={() => updateStatus(alert.id, "ACKNOWLEDGED")}
                       disabled={updatingId === alert.id}
-                      style={{ padding: "4px 10px", cursor: "pointer" }}
+                      className="hud-button-outline"
                     >
                       Acknowledge
                     </button>
@@ -147,15 +135,15 @@ export default function AlertsPanel() {
                   <button
                     onClick={() => updateStatus(alert.id, "RESOLVED")}
                     disabled={updatingId === alert.id}
-                    style={{ padding: "4px 10px", cursor: "pointer" }}
+                    className="hud-button"
                   >
                     Resolve
                   </button>
                 </div>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

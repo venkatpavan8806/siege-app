@@ -16,11 +16,11 @@ type CheckResult = {
 function severityColor(severity: string): string {
   switch (severity) {
     case "HIGH":
-      return "#c0392b";
+      return "var(--breach-red)";
     case "MEDIUM":
-      return "#e67e22";
+      return "var(--warning-amber)";
     case "LOW":
-      return "#27ae60";
+      return "var(--clear-green)";
     default:
       return "#7f8c8d";
   }
@@ -58,61 +58,49 @@ export default function CheckButton({ assetId }: { assetId: string }) {
   }
 
   return (
-    <div style={{ marginTop: 8 }}>
-      <button
-        onClick={handleCheck}
-        disabled={loading}
-        style={{ padding: "6px 12px", cursor: loading ? "default" : "pointer" }}
-      >
-        {loading ? "Checking..." : "Run Check"}
+    <div className="mt-3">
+      <button onClick={handleCheck} disabled={loading} className="hud-button">
+        {loading ? "Scanning..." : "Run Check"}
       </button>
 
       {error && (
-        <div style={{ color: "#c0392b", fontSize: 14, marginTop: 6 }}>
-          {error}
-        </div>
+        <div className="text-[var(--breach-red)] text-sm mt-2">⚠ {error}</div>
       )}
 
       {result && !result.changed && (
-        <div style={{ color: "#666", fontSize: 14, marginTop: 6 }}>
-          No changes detected.
+        <div className="text-gray-500 text-sm mt-2">
+          ✓ No changes detected.
         </div>
       )}
 
       {result && result.changed && result.alert && (
         <div
-          style={{
-            marginTop: 8,
-            padding: 10,
-            border: "1px solid #ddd",
-            borderRadius: 6,
-          }}
+          className={
+            "mt-3 p-3 border border-[var(--border-dim)] bg-[var(--void-black)] " +
+            (result.alert.severity === "HIGH" ? "pulse-glow" : "")
+          }
         >
           <span
+            className="inline-block px-2 py-0.5 text-xs font-bold uppercase tracking-wide"
             style={{
-              display: "inline-block",
-              padding: "2px 8px",
-              borderRadius: 4,
-              color: "#fff",
-              fontSize: 12,
-              fontWeight: 600,
+              color: "var(--void-black)",
               backgroundColor: severityColor(result.alert.severity),
             }}
           >
             {result.alert.severity}
           </span>
-          <span style={{ marginLeft: 8, fontSize: 14 }}>
+          <span className="ml-2 text-sm">
             Risk score: {result.alert.aiRiskScore}
           </span>
           {result.degraded && (
-            <div style={{ color: "#e67e22", fontSize: 12, marginTop: 4 }}>
+            <div className="text-[var(--warning-amber)] text-xs mt-1">
               Automated scoring unavailable — manual review needed.
             </div>
           )}
           {/* Plain text only. NEVER dangerouslySetInnerHTML here — this
               text traces back to attacker-controllable page content via
               the LLM (prompt-injection surface). */}
-          <p style={{ marginTop: 6, fontSize: 14, whiteSpace: "pre-wrap" }}>
+          <p className="mt-2 text-sm whitespace-pre-wrap">
             {result.alert.aiExplanation}
           </p>
         </div>
