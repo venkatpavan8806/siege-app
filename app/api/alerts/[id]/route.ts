@@ -1,9 +1,10 @@
 // app/api/alerts/[id]/route.ts
 //
-// PATCH updates an alert's status (ACKNOWLEDGED or RESOLVED). Ownership
-// is checked through the alert's parent asset — same pattern as
-// app/api/assets/[id]/check/route.ts. Never trust the id in the URL
-// alone as proof of authorization.
+// PATCH updates an alert's status. ANALYST can ACKNOWLEDGE alerts on
+// assets they own. Only ADMIN can mark an alert RESOLVED. Ownership for
+// ACKNOWLEDGED is still checked through the alert's parent asset — same
+// pattern as app/api/assets/[id]/check/route.ts. Never trust the id in
+// the URL alone as proof of authorization.
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
@@ -34,6 +35,12 @@ export const PATCH = withAuthErrors(
       );
     }
 
+    // Only ADMIN may resolve. This check happens before the alert is even
+    // fetched, so an ANALYST gets a clean 403 regardless of ownership.
+    if (status === "RESOLVED" && session.role !== "ADMIN") {
+      throw new AuthError("Forbidden: only ADMIN can resolve alerts", 403);
+    }
+
     const alert = await prisma.alert.findUnique({
       where: { id: params.id },
       include: { asset: true },
@@ -54,7 +61,7 @@ export const PATCH = withAuthErrors(
 
     await record({
       userId: session.userId,
-      action: "ALERT_STATUS_UPDATE",
+      action: status === "RESOLVED" ? "ALERT_RESOLVED" : "ALERT_STATUS_UPDATE",
       resourceType: "Alert",
       resourceId: alert.id,
     });
