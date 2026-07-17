@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import SnapshotCompareClient from "./SnapshotCompareClient";
+import CompareTabs from "./CompareTabs";
 import Link from "next/link";
 
 export default async function ComparePage({
@@ -67,7 +67,7 @@ export default async function ComparePage({
                     </p>
                 </div>
             ) : (
-                <SnapshotCompareClient snapshots={snapshots} />
+                <CompareTabs snapshots={snapshots} />
             )}
         </div>
     );

@@ -185,4 +185,18 @@ export async function safeFetch(inputUrl: string): Promise<SafeFetchResult> {
   throw new SsrfBlockedError("Too many redirects");
 }
 
+/**
+ * Validates a URL's scheme and resolved IP without fetching it.
+ * Used by callers (like the screenshot tool) that need to check safety
+ * before handing the URL to something other than safeFetch's own
+ * fetch/redirect loop.
+ */
+export async function assertUrlIsSafe(urlString: string): Promise<void> {
+  const parsed = new URL(urlString);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new SsrfBlockedError(`Blocked scheme: ${parsed.protocol}`);
+  }
+  await resolveAndValidate(parsed.hostname);
+}
+
 export { SsrfBlockedError };

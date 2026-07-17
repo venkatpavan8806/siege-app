@@ -1,0 +1,161 @@
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 385c96a..3f7fcf5 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -1,6 +1,3 @@
+-// prisma/schema.prisma
+-// Postgres. Run: npx prisma migrate dev --name init
+-
+ generator client {
+   provider = "prisma-client-js"
+ }
+@@ -10,40 +7,27 @@ datasource db {
+   url      = env("DATABASE_URL")
+ }
+ 
+-enum Role {
+-  ADMIN
+-  ANALYST
+-}
+-
+-enum AlertStatus {
+-  OPEN
+-  ACKNOWLEDGED
+-  RESOLVED
+-}
+-
+ model User {
+-  id           String   @id @default(cuid())
+-  email        String   @unique
++  id           String     @id @default(cuid())
++  email        String     @unique
+   passwordHash String
+-  role         Role     @default(ANALYST)
+-  createdAt    DateTime @default(now())
+-
+-  assets    Asset[]
+-  auditLogs AuditLog[]
++  role         Role       @default(ANALYST)
++  createdAt    DateTime   @default(now())
++  assets       Asset[]
++  auditLogs    AuditLog[]
+ }
+ 
+ model Asset {
+-  id          String   @id @default(cuid())
+-  url         String
+-  name        String
+-  addedById   String
+-  addedBy     User     @relation(fields: [addedById], references: [id])
+-  createdAt   DateTime @default(now())
+-  scanEnabled Boolean  @default(true)
+-
+-  snapshots     Snapshot[]
+-  alerts        Alert[]
+-  vulnFindings  VulnFinding[]
++  id           String        @id @default(cuid())
++  url          String
++  name         String
++  addedById    String
++  createdAt    DateTime      @default(now())
++  scanEnabled  Boolean       @default(true)
++  alerts       Alert[]
++  addedBy      User          @relation(fields: [addedById], references: [id])
++  snapshots    Snapshot[]
++  vulnFindings VulnFinding[]
+ 
+   @@index([addedById])
+ }
+@@ -51,56 +35,64 @@ model Asset {
+ model VulnFinding {
+   id        String   @id @default(cuid())
+   assetId   String
+-  asset     Asset    @relation(fields: [assetId], references: [id])
+-  category  String   // HEADERS | TRANSPORT | EXPOSURE | INFO_DISCLOSURE
+-  finding   String   // human-readable description of the specific issue
+-  severity  String   // LOW | MEDIUM | HIGH
++  category  String
++  finding   String
++  severity  String
+   checkedAt DateTime @default(now())
++  asset     Asset    @relation(fields: [assetId], references: [id])
+ 
+   @@index([assetId, checkedAt])
+ }
+ 
+ model Snapshot {
+-  id                   String   @id @default(cuid())
+-  assetId              String
+-  asset                Asset    @relation(fields: [assetId], references: [id])
+-  contentHash          String
+-  // Sanitized/escaped text only. NEVER store or render raw HTML from the
+-  // fetched target as live markup — see lib/ssrf-guard.ts and dashboard notes.
+-  rawContentSanitized  String
+-  capturedAt           DateTime @default(now())
+-
+-  alerts Alert[]
++  id                  String   @id @default(cuid())
++  assetId             String
++  contentHash         String
++  rawContentSanitized String
++  capturedAt          DateTime @default(now())
++  screenshotPath      String?
++  alerts              Alert[]
++  asset               Asset    @relation(fields: [assetId], references: [id])
+ 
+   @@index([assetId, capturedAt])
+ }
+ 
+ model Alert {
+-  id             String      @id @default(cuid())
+-  assetId        String
+-  asset          Asset       @relation(fields: [assetId], references: [id])
+-  snapshotId     String
+-  snapshot       Snapshot    @relation(fields: [snapshotId], references: [id])
+-  diffSummary    String
+-  aiRiskScore    Int // 0-100, produced by lib/llm-risk-scoring.ts
++  id                String      @id @default(cuid())
++  assetId           String
++  snapshotId        String
++  diffSummary       String
++  aiRiskScore       Int
+   aiExplanation     String
+-  recommendedAction String @default("Not assessed — generated before this field existed") // concrete remediation step, produced by lib/llm-risk-scoring.ts
+-  severity          String // LOW | MEDIUM | HIGH — derived from aiRiskScore, not free text from the model
+-  status         AlertStatus @default(OPEN)
+-  createdAt      DateTime    @default(now())
++  severity          String
++  status            AlertStatus @default(OPEN)
++  createdAt         DateTime    @default(now())
++  recommendedAction String      @default("Not assessed — generated before this field existed")
++  asset             Asset       @relation(fields: [assetId], references: [id])
++  snapshot          Snapshot    @relation(fields: [snapshotId], references: [id])
++
+   @@index([assetId, status])
+ }
+ 
+-
+-// Append-only. No update/delete route should ever touch this model.
+ model AuditLog {
+   id           String   @id @default(cuid())
+   userId       String
+-  user         User     @relation(fields: [userId], references: [id])
+   action       String
+   resourceType String
+   resourceId   String
+   createdAt    DateTime @default(now())
++  user         User     @relation(fields: [userId], references: [id])
+ 
+   @@index([userId, createdAt])
+ }
++
++enum Role {
++  ADMIN
++  ANALYST
++}
++
++enum AlertStatus {
++  OPEN
++  ACKNOWLEDGED
++  RESOLVED
++}

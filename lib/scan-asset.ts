@@ -9,6 +9,7 @@ import crypto from "node:crypto";
 import { prisma } from "@/lib/db";
 import { safeFetch, SsrfBlockedError } from "@/lib/ssrf-guard";
 import { assessDefacementRisk } from "@/lib/llm-risk-scoring";
+import { captureScreenshot } from "@/lib/screenshot";
 import type { Asset } from "@prisma/client";
 
 function stripToText(html: string): string {
@@ -47,6 +48,20 @@ export async function scanAsset(asset: Asset) {
             rawContentSanitized: text,
         },
     });
+
+    // Screenshot capture is a soft-fail enhancement — if it errors (site
+    // blocks headless browsers, times out, etc.) the content-based check
+    // above has already succeeded and shouldn't be thrown away over it.
+    try {
+        const screenshotPath = await captureScreenshot(asset.id, asset.url);
+        await prisma.snapshot.update({
+            where: { id: newSnapshot.id },
+            data: { screenshotPath },
+        });
+        newSnapshot.screenshotPath = screenshotPath;
+    } catch (err) {
+        console.error("Screenshot capture failed:", err);
+    }
 
     if (!lastSnapshot || lastSnapshot.contentHash === contentHash) {
         return { changed: false as const, snapshot: newSnapshot };

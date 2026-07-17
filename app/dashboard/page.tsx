@@ -10,6 +10,7 @@ import ScanToggle from "./ScanToggle";
 import VulnScanButton from "./VulnScanButton";
 import BehavioralSignals from "./BehavioralSignals";
 import DeleteAssetButton from "./DeleteAssetButton";
+import DiscoverPagesButton from "./DiscoverPagesButton";
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -90,6 +91,7 @@ export default async function DashboardPage() {
                                     </div>
                                     <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
                                         <VulnScanButton assetId={asset.id} />
+                                        <DiscoverPagesButton assetId={asset.id} />
                                         <DeleteAssetButton assetId={asset.id} assetName={asset.name} />
                                     </div>
                                 </div>
