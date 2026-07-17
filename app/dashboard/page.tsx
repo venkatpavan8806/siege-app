@@ -9,6 +9,7 @@ import Link from "next/link";
 import ScanToggle from "./ScanToggle";
 import VulnScanButton from "./VulnScanButton";
 import BehavioralSignals from "./BehavioralSignals";
+import DeleteAssetButton from "./DeleteAssetButton";
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
                 <div className="flex flex-col h-full">
                     <div className="flex justify-between items-center bg-[var(--hull-steel)] border border-[var(--border-dim)] p-3 mb-4">
                         <h2 className="text-lg text-[var(--kaiju-teal)] m-0 flex items-center gap-2">
-                            <span className="text-[10px] opacity-70">▶</span> Monitored Targets
+                            <span className="text-[10px] opacity-70">&#9656;</span> Monitored Targets
                         </h2>
                         <span className="text-[11px] font-bold text-[#E8ECF1] bg-[var(--border-dim)] px-2 py-1 tracking-widest">
                             ACTIVE_UNITS: {assets.length}
@@ -80,15 +81,16 @@ export default async function DashboardPage() {
                                             Snapshot Diff
                                         </Link>
                                     </div>
-                                    <div className="text-[#8c9baf] text-[12px] mb-4 p-2 bg-[rgba(5,8,11,0.5)] border border-[var(--border-dim)] font-mono truncate">
+                                    <div className="text-[#A8B5C7] text-[13px] mb-4 p-2.5 bg-[rgba(5,8,11,0.5)] border border-[var(--border-dim)] font-mono truncate">
                                         {asset.url}
                                     </div>
                                     <div className="flex items-center justify-between gap-3 flex-wrap">
                                         <CheckButton assetId={asset.id} />
                                         <ScanToggle assetId={asset.id} initialEnabled={asset.scanEnabled} />
                                     </div>
-                                    <div className="mt-3">
+                                    <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
                                         <VulnScanButton assetId={asset.id} />
+                                        <DeleteAssetButton assetId={asset.id} assetName={asset.name} />
                                     </div>
                                 </div>
                             ))}
@@ -101,7 +103,7 @@ export default async function DashboardPage() {
                     <div>
                         <div className="flex justify-between items-center bg-[var(--hull-steel)] border border-[var(--border-dim)] p-3 mb-4">
                             <h2 className="text-lg text-[#E8ECF1] m-0 flex items-center gap-2">
-                                <span className="text-[10px] opacity-70">▶</span> Registration Terminal
+                                <span className="text-[10px] opacity-70">&#9656;</span> Registration Terminal
                             </h2>
                         </div>
                         <AddAssetForm />
@@ -110,7 +112,7 @@ export default async function DashboardPage() {
                     <div className="flex-1">
                         <AlertsPanel />
                     </div>
-		    <div>
+                    <div>
                         <BehavioralSignals />
                     </div>
                 </div>
