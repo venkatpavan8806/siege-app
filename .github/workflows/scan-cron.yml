@@ -1,0 +1,15 @@
+name: Scheduled Asset Scan
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call scan endpoint
+        run: |
+          curl -X GET "https://siege-app-pvmc.vercel.app/api/cron/scan-assets" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
