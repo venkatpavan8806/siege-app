@@ -1,8 +1,11 @@
 // lib/llm-risk-scoring.ts
 //
-// BYOK disclosure (per event rules): this uses the Anthropic API directly
-// with our own key, model claude-sonnet-4-6, called server-side only.
-// Set ANTHROPIC_API_KEY in .env — never expose it to the client bundle.
+// AI/BYOK disclosure: this uses the Groq API directly with our own key,
+// model llama-3.3-70b-versatile, called server-side only. Groq was
+// selected over a paid provider given hackathon budget constraints; the
+// prompt-injection defenses and fail-closed design below apply regardless
+// of which model provider is behind the call. Set GROQ_API_KEY in .env —
+// never expose it to the client bundle.
 //
 // Threat model: the "diff" we're asking the model to classify is derived
 // from content we fetched from an EXTERNAL, ATTACKER-INFLUENCEABLE website
@@ -18,13 +21,13 @@
 //   3. Any parse failure fails CLOSED (treated as "needs human review"),
 //      never fails open into "safe, no alert."
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6";
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const MODEL = "llama-3.3-70b-versatile";
 
 export type RiskAssessment = {
   aiRiskScore: number; // 0-100
   aiExplanation: string;
-  recommendedAction: string; // NEW: concrete remediation step, PS requirement
+  recommendedAction: string;
   severity: "LOW" | "MEDIUM" | "HIGH";
 };
 
@@ -63,8 +66,6 @@ function deriveSeverity(score: number): "LOW" | "MEDIUM" | "HIGH" {
 }
 
 function buildUserPrompt(oldText: string, newText: string): string {
-  // Truncate defensively — an attacker-controlled page could try to be
-  // huge to run up your API costs or exceed context.
   const cap = (s: string) => s.slice(0, 8_000);
   return [
     "<old_snapshot>",
@@ -80,36 +81,32 @@ export async function assessDefacementRisk(
   oldText: string,
   newText: string
 ): Promise<RiskAssessment> {
-  if (!ANTHROPIC_API_KEY) {
-    throw new Error("ANTHROPIC_API_KEY is not set");
+  if (!GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is not set");
   }
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
+      Authorization: `Bearer ${GROQ_API_KEY}`,
     },
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 350,
-      system: SYSTEM_PROMPT,
       messages: [
+        { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildUserPrompt(oldText, newText) },
       ],
     }),
   });
 
   if (!res.ok) {
-    // Fail closed: caller should treat this as "needs manual review",
-    // not silently skip alerting.
     throw new Error(`LLM call failed: ${res.status} ${await res.text()}`);
   }
 
   const data = await res.json();
-  const textBlock = data.content?.find((b: any) => b.type === "text");
-  const raw: string = textBlock?.text ?? "";
+  const raw: string = data.choices?.[0]?.message?.content ?? "";
 
   let parsed: {
     riskScore: unknown;
@@ -117,7 +114,6 @@ export async function assessDefacementRisk(
     recommendedAction: unknown;
   };
   try {
-    // Strip accidental code-fence wrapping before parsing.
     const cleaned = raw.replace(/```json|```/g, "").trim();
     parsed = JSON.parse(cleaned);
   } catch {
@@ -131,20 +127,19 @@ export async function assessDefacementRisk(
 
   const explanation =
     typeof parsed.explanation === "string"
-      ? parsed.explanation.slice(0, 500) // cap length, this gets rendered in UI
+      ? parsed.explanation.slice(0, 500)
       : "No explanation provided.";
 
   const recommendedAction =
     typeof parsed.recommendedAction === "string" &&
       parsed.recommendedAction.trim().length > 0
-      ? parsed.recommendedAction.slice(0, 500) // cap length, this gets rendered in UI
+      ? parsed.recommendedAction.slice(0, 500)
       : "No recommendation provided — review manually.";
 
   return {
     aiRiskScore: Math.round(score),
     aiExplanation: explanation,
     recommendedAction,
-    severity: deriveSeverity(score), // derived server-side, never trust a
-    // severity string the model might emit
+    severity: deriveSeverity(score),
   };
 }

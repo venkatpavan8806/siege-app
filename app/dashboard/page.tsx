@@ -8,6 +8,7 @@ import AlertsPanel from "./AlertsPanel";
 import Link from "next/link";
 import ScanToggle from "./ScanToggle";
 import VulnScanButton from "./VulnScanButton";
+import BehavioralSignals from "./BehavioralSignals";
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -108,6 +109,9 @@ export default async function DashboardPage() {
 
                     <div className="flex-1">
                         <AlertsPanel />
+                    </div>
+		    <div>
+                        <BehavioralSignals />
                     </div>
                 </div>
             </div>
