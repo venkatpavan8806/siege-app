@@ -55,8 +55,14 @@ function isPrivateOrReservedIp(ip: string): boolean {
     return false;
   }
   if (net.isIPv6(ip)) {
+    // Unwrap IPv4-mapped IPv6 addresses (e.g. ::ffff:169.254.169.254) and
+    // re-check as IPv4 — otherwise this exact bypass sails through as
+    // "not a known-bad IPv6 prefix."
+    const mapped = unwrapIPv4Mapped(ip);
+    if (mapped) return isPrivateOrReservedIp(mapped);
+
     const lower = ip.toLowerCase();
-    if (lower === "::1") return true; // loopback
+    if (lower === "::1" || lower === "::") return true; // loopback / unspecified
     if (lower.startsWith("fc") || lower.startsWith("fd")) return true; // unique local
     if (lower.startsWith("fe80")) return true; // link-local
     return false;
@@ -166,7 +172,14 @@ export async function safeFetch(inputUrl: string): Promise<SafeFetchResult> {
     }
     const body = Buffer.concat(chunks).toString("utf-8");
 
-    return { finalUrl: currentUrl, status: res.status, body };
+    // Capture response headers for callers like vuln-scan.ts that check
+    // for missing security headers / banner disclosure.
+    const headers: Record<string, string> = {};
+    res.headers.forEach((value, key) => {
+      headers[key.toLowerCase()] = value;
+    });
+
+    return { finalUrl: currentUrl, status: res.status, body, headers };
   }
 
   throw new SsrfBlockedError("Too many redirects");

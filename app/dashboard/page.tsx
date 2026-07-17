@@ -7,6 +7,7 @@ import CheckButton from "./CheckButton";
 import AlertsPanel from "./AlertsPanel";
 import Link from "next/link";
 import ScanToggle from "./ScanToggle";
+import VulnScanButton from "./VulnScanButton";
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -84,6 +85,9 @@ export default async function DashboardPage() {
                                     <div className="flex items-center justify-between gap-3 flex-wrap">
                                         <CheckButton assetId={asset.id} />
                                         <ScanToggle assetId={asset.id} initialEnabled={asset.scanEnabled} />
+                                    </div>
+                                    <div className="mt-3">
+                                        <VulnScanButton assetId={asset.id} />
                                     </div>
                                 </div>
                             ))}
