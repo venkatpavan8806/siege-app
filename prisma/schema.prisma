@@ -53,8 +53,9 @@ model Snapshot {
   screenshotPath      String?
   alerts              Alert[]
   asset               Asset    @relation(fields: [assetId], references: [id])
+  sourceUrl           String?
 
-  @@index([assetId, capturedAt])
+  @@index([assetId, sourceUrl, capturedAt])
 }
 
 model Alert {
@@ -70,6 +71,7 @@ model Alert {
   recommendedAction String      @default("Not assessed — generated before this field existed")
   asset             Asset       @relation(fields: [assetId], references: [id])
   snapshot          Snapshot    @relation(fields: [snapshotId], references: [id])
+  sourceUrl           String?
 
   @@index([assetId, status])
 }
